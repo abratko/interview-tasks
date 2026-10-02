@@ -17,7 +17,6 @@ export function debounce(fn, waitMs) {
   const debounce = function (...args) {
     if (setTimeoutId) {
       clearTimeout(setTimeoutId)
-      setTimeoutId = null
     }
 
     setTimeoutId = setTimeout(
