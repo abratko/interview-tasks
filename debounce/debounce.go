@@ -10,21 +10,33 @@
 // events keep coming; debounce waits for the stream to settle, then runs once.
 package debounce
 
-import "time"
+import (
+	"sync"
+	"time"
+)
 
 func Debounce[T any](
 	fn func(T),
 	wait time.Duration,
 ) (func(T), func()) {
-	var timer *time.Timer
+	var (
+		timer *time.Timer
+		mu sync.Mutex
+	)
+
 	return func(arg T) {
+		mu.Lock()
+		defer mu.Unlock()
+
 		if timer != nil {
 			timer.Stop()
-			timer = nil
 		}
 
 		timer = time.AfterFunc(wait, func() { fn(arg) })
 	}, func() {
+		mu.Lock()
+		defer mu.Unlock()
+		
 		if (timer == nil) {
 			return 
 		}
