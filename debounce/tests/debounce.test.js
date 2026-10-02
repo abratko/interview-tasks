@@ -78,4 +78,52 @@ describe('debounce', () => {
 
     assert.equal(seen, 42);
   });
+
+  it('stop cancels a pending call', () => {
+    mock.timers.enable({ apis: ['setTimeout'] });
+
+    let calls = 0;
+    const d = debounce(() => {
+      calls += 1;
+    }, 100);
+
+    d();
+    mock.timers.tick(50);
+    d.stop();
+    mock.timers.tick(100);
+
+    assert.equal(calls, 0);
+  });
+
+  it('stop is safe when nothing is pending', () => {
+    mock.timers.enable({ apis: ['setTimeout'] });
+
+    let calls = 0;
+    const d = debounce(() => {
+      calls += 1;
+    }, 100);
+
+    d.stop();
+    d.stop();
+
+    assert.equal(calls, 0);
+  });
+
+  it('call works again after stop', () => {
+    mock.timers.enable({ apis: ['setTimeout'] });
+
+    /** @type {unknown[]} */
+    const received = [];
+    const d = debounce((...args) => {
+      received.push(...args);
+    }, 50);
+
+    d('canceled');
+    d.stop();
+
+    d('after-stop');
+    mock.timers.tick(50);
+
+    assert.deepEqual(received, ['after-stop']);
+  });
 });

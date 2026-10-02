@@ -15,13 +15,21 @@ import "time"
 func Debounce[T any](
 	fn func(T),
 	wait time.Duration,
-) func(T) {
+) (func(T), func()) {
 	var timer *time.Timer
 	return func(arg T) {
-		if(timer != nil) {
+		if timer != nil {
 			timer.Stop()
+			timer = nil
 		}
 
 		timer = time.AfterFunc(wait, func() { fn(arg) })
+	}, func() {
+		if (timer == nil) {
+			return 
+		}
+
+		timer.Stop()
+		timer = nil
 	}
 }

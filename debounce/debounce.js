@@ -13,16 +13,27 @@
  */
 
 export function debounce(fn, waitMs) {
-  let setTimeoutId
-  return function (...args) {
+  let setTimeoutId = null
+  const debounce = function (...args) {
     if (setTimeoutId) {
       clearTimeout(setTimeoutId)
+      setTimeoutId = null
     }
 
     setTimeoutId = setTimeout(
-      () => fn.call(this, ...args), 
+      () => fn.call(this, ...args),
       waitMs
     )
   }
-}
 
+  debounce.stop =function () {
+    if (!setTimeoutId) {
+      return 
+    }
+
+    clearTimeout(setTimeoutId)
+    setTimeoutId = null
+  }
+
+  return debounce
+}
